@@ -86,8 +86,9 @@ int main()
     printf("yes!");
 }
 ~~~
-![alt text](image.png)
-![alt text](image-1.png)
+这里我不清楚是截什么的图就放的改了后的文件
+![image](https://github.com/user-attachments/assets/895244a2-346d-46ec-8a51-453413ad08a1)
+
 ##任务1
 1.因为浮点数在计算机中是用二进制表示的，但是一些十进制小数在二进制中无法精确表示，是无线循环的，也可以说存储并不连续，小数会被截断，从而导致精度损失。
 2.关于如何获得精确值，我首先的想法就是像大数运算那样，运用数组，字符数组来存储数据。在我的了解后，Java中的BigInteger和BigDecimal类似乎就是按照的这种方式来精确表示定点数，而python中的Decimal块则好像是直接转而用十进制表示，从而避开了二进制表示小数会截断的情况，至于C语言gmp.h头文件，它采用的也是类数组的方式，用块的存储机制来分解数据，再用指数来控制小数点位置，而且它是动态数组的方式，更加灵活。
@@ -214,6 +215,8 @@ void init(char a[],PointFixedNum* point)
 
     }else point->type='\0';
     int end=foundend(a);
+    if(a[end-1]=='\n')
+    end--;
     if(a[end-1]=='B')
     {
     a[end-1]='\0';
@@ -262,7 +265,296 @@ int main()
     printf("%c%s.%sD",first.type,first.int_part,first.frac_part);
 }
 ~~~
-![alt text](CS-MEDIUM2-task1.png)
+![image](https://github.com/user-attachments/assets/90359c5d-23a4-4d65-8bb3-87fb76a80623)
+
+###step2
+~~~c
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+int N=0;
+typedef struct{
+    char type;
+    char int_part[33];
+    char frac_part[32];
+}PointFixedNum;
+int foundend(char a[])
+{
+    int b=0;
+    while (a[b]!='\0')
+    {
+        b++;
+    }
+    return b;
+}
+void minus(PointFixedNum* first1,PointFixedNum *second1 ,char result[])
+{
+    char*a=first1->int_part,*b=second1->int_part;
+    char*f1=first1->frac_part,*f2=second1->frac_part;
+    int pointa=strlen(f1);
+    int pointb=strlen(f2);
+    int pot=pointa>pointb?pointa:pointb;
+    if(pointa>pointb)
+    {   while(pointa>pointb)
+        f2[pointb++]='0';
+        f2[pointb]='\0';
+    }else
+    {
+        while (pointa<pointb)
+        f1[pointa++]='0';
+        f1[pointa]='\0';
+    }
+    strcat(a,f1);
+    strcat(b,f2);
+    int len1=strlen(a);
+    int len2=strlen(b);
+    int borrow=0;
+    int c=0;
+    int i=len1-1;
+    int j=len2-1;
+    if (len1<len2||(len1 == len2 && strcmp(a, b)<0)) {
+        N++;
+        char*x=a;
+        a=b;
+        b=x;
+        int t=len1;
+        len1=len2;
+        len2=t;
+    }
+    while (i>=0||j>=0)
+    {   
+        int diff=borrow;
+        diff+=a[i--]-'0';
+        if(j>=0)
+        diff-=b[j--]-'0';
+        if(diff<0)
+        {
+            diff+=10;
+            borrow=-1;
+        }else borrow=0;
+        result[c++]=diff+'0';
+    }
+    while (c>1&&result[c-1]=='0')
+    {
+        c--;
+    }
+    result[c]='\0';
+    int cc=c;
+    c++;
+    while(pot-1!=cc)
+    {   
+        result[cc+1]=result[cc];
+        cc--;
+    }
+    result[pot]='.';
+    for(int d=0;d<c/2;d++)
+    {
+        char num=result[d];
+        result[d]=result[c-1-d];
+        result[c-1-d]=num;
+    }
+}
+void plus(PointFixedNum  *first1,PointFixedNum *second1 ,char result[])
+{   char* a=first1->int_part,*b=second1->int_part;
+    char *f1=first1->frac_part,*f2=second1->frac_part;
+    int pointa=strlen(f1);
+    int pointb=strlen(f2);
+    int pot=pointa>pointb?pointa:pointb;
+    if(pointa>pointb)
+    {   while(pointa>pointb)
+        f2[pointb++]='0';
+        f2[pointb]='\0';
+    }else
+    {
+        while (pointa<pointb)
+        f1[pointa++]='0';
+        f1[pointa]='\0';
+    }
+    strcat(a,f1);
+    strcat(b,f2);
+    int len1=strlen(a);
+    int len2=strlen(b);
+    char result1[50];
+    int add=0;
+    int c=0;
+    int i=len1-1;
+    int j=len2-1;
+    while (i>=0||j>=0||add)
+    {   int sum=0;
+        if(i>=0)
+        {
+            sum+=a[i--]-'0';
+        }
+        if(j>=0)
+        {
+            sum+=b[j--]-'0';
+        }
+        sum+=add;
+        result1[c++]=(sum%10)+'0';
+        add=sum/10;
+    }
+    result1[c++]='\0';
+    int h=0,p=0;
+    while(c!=p-1)
+    {   if(h==pot)
+        result[h++]='.';
+        result[h++]=result1[p++];
+    }
+    for(int d=0;d<c/2;d++)
+    {   
+        char num=result[d];
+        result[d]=result[c-1-d];
+        result[c-1-d]=num;
+    }
+}
+void multiply(PointFixedNum* first1,PointFixedNum *second1 ,char result[])
+{
+    char*a=first1->int_part,*b=second1->int_part;
+    char*f1=first1->frac_part,*f2=second1->frac_part;
+    int pointa=strlen(f1);
+    int pointb=strlen(f2);
+    int pot=pointa+pointb;
+    strcat(a,f1);
+    strcat(b,f2);
+    int len1=strlen(a);
+    int len2=strlen(b);
+    int res[100]={0};
+    int k=0;
+    for(int i=len1-1;i>=0;i--)
+    {
+        for(int j=len2-1;j>=0;j--)
+        {   k=len1+len2-i-j-2;
+            res[k]+=(a[i]-'0')*(b[j]-'0');
+            res[k+1]+=res[k]/10;
+            res[k]%=10;
+        }
+    }
+    for(int i=0;i<=k+1;i++)
+    {
+        result[i]=res[i]+'0';
+    }
+    if(result[k+1]=='0')
+    result[k+1]='\0';
+    else result[++k+1]='\0';
+    int cc=1+k++;
+    while(pot-1!=cc)
+    {   
+        result[cc+1]=result[cc];
+        cc--;
+    }
+    result[pot]='.';
+    for(int d=0;d<(k+1)/2;d++)
+    {
+        char num=result[d];
+        result[d]=result[k-d];
+        result[k-d]=num;
+    }
+}
+void init(char a[],PointFixedNum* point)
+{   
+    if(a[0]=='-')
+    {
+        a++;
+        point->type='-';
+    }else point->type='\0';
+    int end=foundend(a);
+    if(a[end-1]=='\n')
+    end--;
+    if(a[end-1]=='B')
+    {
+    a[end-1]='\0';
+    int b;
+    char intpart[32],fracpart[32];
+    sscanf(a,"%[^.].%s",intpart,fracpart);
+    b=atoi(intpart);
+    int num[32],i=0,j=1,k=0,p=0,l=0;
+    int f=2,y=0;
+    while(b>0)
+    {   
+        num[i++]=b%10;
+        b/=10;
+    }
+    while(i-1>=p)
+    {
+        k+=j*num[p++];
+        j*=2;
+    }
+    int len=strlen(fracpart);
+    int lens=1,tens=1;
+    while (lens<=len)
+    {
+        tens*=10;
+        lens++;
+    }
+    while(fracpart[l]!='\0')
+    {
+        if(fracpart[l++]=='1')
+        y+=tens/f;
+        f*=2;
+    }
+    sprintf(point->int_part,"%d",k);
+    sprintf(point->frac_part,"%d",y);
+    }else
+    {a[end-1]='\0';
+    sscanf(a,"%[^.].%s",point->int_part,point->frac_part);
+    }
+}
+int main()
+{   char result[65];
+    char a[100];
+    char n1[50],n2[50];
+    fgets(a,sizeof(a),stdin);
+    char* search=strpbrk(a,"+-*");
+    strncpy(n1,a,search-a-1);
+    n1[search-a-1]='\0';
+    char order=*search;
+    strcpy(n2,search+2);
+    PointFixedNum first,second;
+    init(n1,&first);
+    init(n2,&second);
+    char resulttype='\0';
+    switch (order)
+    {
+    case '+':
+        if(first.type!='-'&&second.type=='-')
+        {
+            minus(&first,&second,result);
+        }else if (first.type=='-'&&second.type!='-')
+        {
+            minus(&first,&second,result);
+        }
+        
+        else{ 
+            if(first.type=='-'&&second.type=='-')
+            N++;
+            plus(&first,&second,result);
+        }
+        break;
+    case '-':
+        if(first.type!='-'&&second.type=='-')
+        {
+            plus(&first,&second,result);
+        }else if(first.type=='-'&&second.type!='-')
+        {   
+            N++;
+            plus(&first,&second,result);
+        }else
+        minus(&first,&second,result);
+        break;
+    case '*':
+        if(first.type!='-'&&second.type=='-')
+        N++;
+        if(first.type=='-'&&second.type!='-')
+        N++;
+        multiply(&first,&second,result);
+        break;
+    }
+    if(N==1)
+    resulttype='-';
+    printf("%c%sD",resulttype,result);
+}
+~~~
+
 ##任务三
 ~~~c
 #include<stdio.h>
@@ -454,6 +746,8 @@ void init(char a[],PointFixedNum* point)
         point->type='-';
     }else point->type='\0';
     int end=foundend(a);
+    if(a[end-1]=='\n')
+    end--;
     if(a[end-1]=='B')
     {
     a[end-1]='\0';
