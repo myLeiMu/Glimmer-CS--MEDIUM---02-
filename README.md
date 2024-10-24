@@ -6,11 +6,12 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+//转化为十进制
 char*ten(char a[])
 {   int b;
     char intpart[32],fracpart[32];
     sscanf(a,"%[^.].%s",intpart,fracpart);
-    b=atoi(intpart);
+    b=atoi(intpart);//将字符变成数
     int num[32],i=0,j=1,k=0,p=0,l=0;
     int f=2,y=0;
     while(b>0)
@@ -86,6 +87,7 @@ int main()
     printf("yes!");
 }
 ~~~
+但我现在知道竟然有个strtol函数，果然C语言还是方便的，不过这里应该也不希望使用这个函数吧。
 这里我不清楚是截什么的图就放的改了后的文件
 ![image](https://github.com/user-attachments/assets/895244a2-346d-46ec-8a51-453413ad08a1)
 
@@ -866,4 +868,5 @@ int main()
 ~~~
 我这里就是真的按物理次序进行的连续计算，就是没有管乘除的优先级，因为我感觉文档的格式就是希望一行一行地进行，
 所以我就没有再设置一个判断符号再进行先后运算的过程。
-
+![屏幕截图 2024-10-24 133026](https://github.com/user-attachments/assets/3f217c05-4685-4267-bf38-51f6c9922f3e)
+但如果真就是按照运算次序来的话，我可能就会先直接读入所有内容，然后先找到“*”的位置，将前一个数与后一个数相乘，然后把这些数据储存起来，再找下一个，我会用到strstr函数，等找不到时再进行加减法运算，因为是只剩加减所以次序不重要，最后在加之前乘出的结果就行。
