@@ -212,7 +212,7 @@ int foundend(char a[])
     }
     return b;
 }
-void init(char a[],PointFixedNum* point)
+void init(char a[],PointFixedNum* point)//将数据存入结构体
 {   
     if(a[0]=='-')
     {
@@ -456,7 +456,7 @@ void multiply(PointFixedNum* first1,PointFixedNum *second1 ,char result[])
         result[k-d]=num;
     }
 }
-void init(char a[],PointFixedNum* point)
+void init(char a[],PointFixedNum* point)//将数据存入结构体
 {   
     if(a[0]=='-')
     {
@@ -745,7 +745,7 @@ void multiply(PointFixedNum* first1,PointFixedNum *second1 ,char result[])
         result[k-d]=num;
     }
 }
-void init(char a[],PointFixedNum* point)
+void init(char a[],PointFixedNum* point)//将数据存入结构体
 {   
     if(a[0]=='-')
     {
