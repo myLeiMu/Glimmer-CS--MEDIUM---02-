@@ -554,6 +554,7 @@ int main()
     printf("%c%sD",resulttype,result);
 }
 ~~~
+![image](https://github.com/user-attachments/assets/38d4039d-c836-42ca-b47d-4a44e6df3d2c)
 
 ##任务三
 ~~~c
@@ -863,7 +864,6 @@ int main()
     printf("yes!");
 }
 ~~~
-![alt text](<屏幕截图 2024-10-22 221912.png>)
 我这里就是真的按物理次序进行的连续计算，就是没有管乘除的优先级，因为我感觉文档的格式就是希望一行一行地进行，
 所以我就没有再设置一个判断符号再进行先后运算的过程。
 
